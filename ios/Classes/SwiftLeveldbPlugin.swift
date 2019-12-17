@@ -1,10 +1,10 @@
 import Flutter
 import UIKit
 
-public class SwiftLeveldbPlugin: NSObject, FlutterPlugin {
+public class LeveldbPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "leveldb", binaryMessenger: registrar.messenger())
-    let instance = SwiftLeveldbPlugin()
+    let instance = LeveldbPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 

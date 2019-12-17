@@ -28,7 +28,7 @@ A new flutter plugin project.
     # LEVELDB_COMPILE_LIBRARY && LEVELDB_SHARED_LIBRARY adds __attribute__((visibility("default"))) for all exposed C functions.
     # what allowing to add -fvisibility=hidden
     # https://github.com/google/leveldb/blob/6caf73ad9dae0ee91873bcb39554537b85163770/include/leveldb/export.h
-    'GCC_PREPROCESSOR_DEFINITIONS' => '$(inherited) LEVELDB_PLATFORM_POSIX=1 LEVELDB_SHARED_LIBRARY=1 LEVELDB_COMPILE_LIBRARY=1',
+    'GCC_PREPROCESSOR_DEFINITIONS' => "$(inherited) 'LEVELDB_PLATFORM_POSIX=1' LEVELDB_SHARED_LIBRARY LEVELDB_COMPILE_LIBRARY 'LEVELDB_IS_BIG_ENDIAN=0'",
     'CFLAGS' => '-D_DARWIN_SOURCE',
     # -Wstrict-prototypes - Enable strict prototype warnings for C code in clang and gcc
     # -Wthread-safety - https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
@@ -42,10 +42,12 @@ A new flutter plugin project.
     'SKIP_INSTALL' => 'YES',
     
     # Search Paths
+    'FRAMEWORK_SEARCH_PATHS' => '$(inherited) "${PODS_ROOT}/../Flutter" "/Library/Frameworks"',
     'SYSTEM_HEADER_SEARCH_PATHS' => '$(inherited) "${PODS_TARGET_SRCROOT}/leveldb/helpers/memenv/"',
-    'HEADER_SEARCH_PATHS' => '$(inherited) "${PODS_TARGET_SRCROOT}/leveldb/include/leveldb" "${PODS_TARGET_SRCROOT}/leveldb/"',
+    'HEADER_SEARCH_PATHS' => '$(inherited) "${PODS_TARGET_SRCROOT}/leveldb/include/" "${PODS_TARGET_SRCROOT}/leveldb/."',
     'USE_HEADERMAP' => 'NO'
   }
+
   s.source_files = 
   'leveldb/db/builder.cc',
   'leveldb/db/c.cc',
@@ -85,5 +87,5 @@ A new flutter plugin project.
   'leveldb/util/logging.cc',
   'leveldb/util/options.cc',
   'leveldb/util/status.cc',
-  'Classes/**/*'
+  'Classes/**/*.swift'  # -fvisibility=hidden will hide all Objective-C code.
 end

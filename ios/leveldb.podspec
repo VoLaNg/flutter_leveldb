@@ -39,7 +39,7 @@ A new flutter plugin project.
     # ? Does flutter use RTTI on typecasting? https://docs.microsoft.com/en-us/cpp/cpp/run-time-type-information
     # -fno-rtti - Disable RTTI (Run-Time Type Information).
     # -fvisibility=hidden - https://gcc.gnu.org/wiki/Visibility. Requires adding attributes on exposed (C) functions: https://flutter.dev/docs/development/platform-integration/c-interop#source-code
-    'OTHER_CFLAGS' => '$(inherited) -Wstrict-prototypes -Wthread-safety -fno-exceptions -fno-rtti -fno-omit-frame-pointer',
+    'OTHER_CFLAGS' => '$(inherited) -Wstrict-prototypes -Wthread-safety -fno-exceptions -fno-rtti -fno-omit-frame-pointer -fvisibility=hidden',
     'OTHER_CPLUSPLUSFLAGS' => '$(inherited) -std=c++11 -momit-leaf-frame-pointer -DNDEBUG $(OTHER_CFLAGS)',
     'GCC_SYMBOLS_PRIVATE_EXTERN' => 'NO',
     'SKIP_INSTALL' => 'YES',
@@ -90,5 +90,5 @@ A new flutter plugin project.
   'leveldb/util/logging.cc',
   'leveldb/util/options.cc',
   'leveldb/util/status.cc',
-  'Classes/**/*'
+  'Classes/**/*.swift'  # -fvisibility=hidden will hide all Objective-C code.
 end
