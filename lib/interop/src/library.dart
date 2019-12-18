@@ -3,6 +3,7 @@ import 'package:ffi/ffi.dart';
 
 import 'leveldb_options_t.dart';
 import 'leveldb_readoptions_t.dart';
+import 'leveldb_writeoptions_t.dart';
 import 'leveldb_t.dart';
 
 abstract class LibLevelDB {
@@ -36,13 +37,18 @@ class _LibLevelDB implements LibLevelDB {
       leveldbOptionsSetBlockRestartInterval;
   final Leveldb_options_set_max_file_size leveldbOptionsSetMaxFileSize;
   final Leveldb_options_set_compression leveldbOptionsSetCompression;
-  // LevelDB ReadOptions
+  // LevelDB Read Options
   final Leveldb_readoptions_create leveldbReadoptionsCreate;
   final Leveldb_readoptions_destroy leveldbReadoptionsDestroy;
   final Leveldb_readoptions_set_verify_checksums
       leveldbReadoptionsSetVerifyChecksums;
   final Leveldb_readoptions_set_fill_cache leveldbReadoptionsSetFillCache;
   final Leveldb_readoptions_set_snapshot leveldbReadoptionsSetSnapshot;
+  // LevelDB Write Options
+final Leveldb_writeoptions_create leveldbWriteoptionsCreate;
+final Leveldb_writeoptions_destroy leveldbWriteoptionsDestroy;
+final Leveldb_writeoptions_set_sync leveldbWriteoptionsSetSync;
+
 
   _LibLevelDB(this.lib)
       : leveldbOpen = lib
@@ -142,5 +148,18 @@ class _LibLevelDB implements LibLevelDB {
         leveldbReadoptionsSetSnapshot = lib
             .lookup<NativeFunction<leveldb_readoptions_set_snapshot>>(
                 'leveldb_readoptions_set_snapshot')
+            .asFunction(),
+        // LevelDB Write Options
+        leveldbWriteoptionsCreate = lib
+            .lookup<NativeFunction<leveldb_writeoptions_create>>(
+                'leveldb_writeoptions_create')
+            .asFunction(),
+        leveldbWriteoptionsDestroy = lib
+            .lookup<NativeFunction<leveldb_writeoptions_destroy>>(
+                'leveldb_writeoptions_destroy')
+            .asFunction(),
+        leveldbWriteoptionsSetSync = lib
+            .lookup<NativeFunction<leveldb_writeoptions_set_sync>>(
+                'leveldb_writeoptions_set_sync')
             .asFunction();
 }
