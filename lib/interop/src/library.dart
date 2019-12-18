@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 
 import 'leveldb_options_t.dart';
+import 'leveldb_readoptions_t.dart';
 import 'leveldb_t.dart';
 
 abstract class LibLevelDB {
@@ -35,6 +36,13 @@ class _LibLevelDB implements LibLevelDB {
       leveldbOptionsSetBlockRestartInterval;
   final Leveldb_options_set_max_file_size leveldbOptionsSetMaxFileSize;
   final Leveldb_options_set_compression leveldbOptionsSetCompression;
+  // LevelDB ReadOptions
+  final Leveldb_readoptions_create leveldbReadoptionsCreate;
+  final Leveldb_readoptions_destroy leveldbReadoptionsDestroy;
+  final Leveldb_readoptions_set_verify_checksums
+      leveldbReadoptionsSetVerifyChecksums;
+  final Leveldb_readoptions_set_fill_cache leveldbReadoptionsSetFillCache;
+  final Leveldb_readoptions_set_snapshot leveldbReadoptionsSetSnapshot;
 
   _LibLevelDB(this.lib)
       : leveldbOpen = lib
@@ -113,5 +121,26 @@ class _LibLevelDB implements LibLevelDB {
         leveldbOptionsSetCompression = lib
             .lookup<NativeFunction<leveldb_options_set_compression>>(
                 'leveldb_options_set_compression')
+            .asFunction(),
+        // LevelDB Read Options
+        leveldbReadoptionsCreate = lib
+            .lookup<NativeFunction<leveldb_readoptions_create>>(
+                'leveldb_readoptions_create')
+            .asFunction(),
+        leveldbReadoptionsDestroy = lib
+            .lookup<NativeFunction<leveldb_readoptions_destroy>>(
+                'leveldb_readoptions_destroy')
+            .asFunction(),
+        leveldbReadoptionsSetVerifyChecksums = lib
+            .lookup<NativeFunction<leveldb_readoptions_set_verify_checksums>>(
+                'leveldb_readoptions_set_verify_checksums')
+            .asFunction(),
+        leveldbReadoptionsSetFillCache = lib
+            .lookup<NativeFunction<leveldb_readoptions_set_fill_cache>>(
+                'leveldb_readoptions_set_fill_cache')
+            .asFunction(),
+        leveldbReadoptionsSetSnapshot = lib
+            .lookup<NativeFunction<leveldb_readoptions_set_snapshot>>(
+                'leveldb_readoptions_set_snapshot')
             .asFunction();
 }
