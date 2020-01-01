@@ -33,9 +33,25 @@ android {
     defaultConfig {
         minSdkVersion 16
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DLEVELDB_PLATFORM_POSIX=1", "-DBUILD_SHARED_LIBS=1", "-DLEVELDB_IS_BIG_ENDIAN=0"
+                cppFlags "-std=c++11", "-D__STDC_FORMAT_MACROS"
+                targets "leveldb"
+            }
+        }
     }
+
     lintOptions {
         disable 'InvalidPackage'
+    }
+
+    externalNativeBuild {
+        cmake {
+            version "3.9.0+"
+            path "./../ios/leveldb/CMakeLists.txt"
+        }
     }
 }
 
