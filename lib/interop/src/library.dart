@@ -1,5 +1,4 @@
 import 'dart:ffi';
-import 'package:ffi/ffi.dart';
 
 import 'leveldb_cache_t.dart';
 import 'leveldb_comparator_t.dart';
@@ -9,9 +8,9 @@ import 'leveldb_iterator_t.dart';
 import 'leveldb_options_t.dart';
 import 'leveldb_readoptions_t.dart';
 import 'leveldb_snapshot_t.dart';
+import 'leveldb_t.dart';
 import 'leveldb_writebatch_t.dart';
 import 'leveldb_writeoptions_t.dart';
-import 'leveldb_t.dart';
 
 abstract class LibLevelDB {
   factory LibLevelDB.lookupLib(DynamicLibrary lib) => _LibLevelDB(lib);
