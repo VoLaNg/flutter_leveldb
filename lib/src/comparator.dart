@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-import 'package:ffi/ffi.dart';
 import 'package:leveldb/interop/interop.dart';
 import 'package:leveldb/src/library.dart';
 import 'package:meta/meta.dart';
@@ -36,30 +35,28 @@ abstract class Comparator extends NativeWrapper {
 
 class _Comparator implements Comparator {
   final LibLevelDB _lib;
-  final Pointer<leveldb_comparator_t> _ptr;
 
   _Comparator(
     this._lib, {
     @required Pointer<NativeFunction<comparator_destructor>> destructor,
     @required Pointer<NativeFunction<comparator_compare>> compare,
     @required Pointer<NativeFunction<comparator_name>> name,
-  }) : _ptr = _lib.leveldbComparatorCreate(
+  }) : ptr = _lib.leveldbComparatorCreate(
           destructor,
           compare,
           name,
         );
 
   @override
-  bool isDestroyed;
+  bool get isDisposed => ptr == null || ptr == nullptr;
 
   @override
-  Pointer<leveldb_comparator_t> get ptr => isDestroyed ? null : _ptr;
+  Pointer<leveldb_comparator_t> ptr;
 
   @override
-  void destroy() {
-    if (isDestroyed) return;
-    isDestroyed = true;
-    _lib.leveldbComparatorDestroy(_ptr);
-    free(_ptr);
+  void dispose() {
+    if (isDisposed) return;
+    _lib.leveldbComparatorDestroy(ptr);
+    ptr = nullptr;
   }
 }

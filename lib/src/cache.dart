@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-import 'package:ffi/ffi.dart';
 import 'package:leveldb/interop/interop.dart';
 import 'package:leveldb/src/library.dart';
 import 'package:leveldb/src/native_wrapper.dart';
@@ -13,22 +12,22 @@ abstract class Cache extends NativeWrapper {
 
 class _Cache implements Cache {
   final LibLevelDB lib;
-  bool isDestroyed;
 
   @override
-  Pointer<leveldb_cache_t> get ptr => isDestroyed ? null : _ptr;
-  final Pointer<leveldb_cache_t> _ptr;
+  bool get isDisposed => ptr == null || ptr == nullptr;
+
+  @override
+  Pointer<leveldb_cache_t> ptr;
 
   _Cache(
     this.lib,
     int capacity,
-  ) : _ptr = lib.leveldbCacheCreateLru(capacity);
+  ) : ptr = lib.leveldbCacheCreateLru(capacity);
 
   @override
-  void destroy() {
-    if (isDestroyed) return;
-    isDestroyed = true;
-    lib.leveldbCacheDestroy(_ptr);
-    free(_ptr);
+  void dispose() {
+    if (isDisposed) return;
+    lib.leveldbCacheDestroy(ptr);
+    ptr = nullptr;
   }
 }

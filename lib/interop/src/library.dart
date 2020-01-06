@@ -35,6 +35,7 @@ abstract class LibLevelDB {
   Leveldb_release_snapshot get leveldbReleaseSnapshot;
   // LevelDB Options
   Leveldb_options_create get leveldbOptionsCreate;
+  Leveldb_options_destroy get leveldbOptionsDestroy;
   Leveldb_options_set_comparator get leveldbOptionsSetComparator;
   Leveldb_options_set_filter_policy get leveldbOptionsSetFilterPolicy;
   Leveldb_options_set_create_if_missing get leveldbOptionsSetCreateIfMissing;
@@ -118,6 +119,7 @@ class _LibLevelDB implements LibLevelDB {
   final Leveldb_release_snapshot leveldbReleaseSnapshot;
   // LevelDB Options
   final Leveldb_options_create leveldbOptionsCreate;
+  final Leveldb_options_destroy leveldbOptionsDestroy;
   final Leveldb_options_set_comparator leveldbOptionsSetComparator;
   final Leveldb_options_set_filter_policy leveldbOptionsSetFilterPolicy;
   final Leveldb_options_set_create_if_missing leveldbOptionsSetCreateIfMissing;
@@ -237,6 +239,10 @@ class _LibLevelDB implements LibLevelDB {
         leveldbOptionsCreate = lib
             .lookup<NativeFunction<leveldb_options_create>>(
                 'leveldb_options_create')
+            .asFunction(),
+        leveldbOptionsDestroy = lib
+            .lookup<NativeFunction<leveldb_options_destroy>>(
+                'leveldb_options_destroy')
             .asFunction(),
         leveldbOptionsSetComparator = lib
             .lookup<NativeFunction<leveldb_options_set_comparator>>(

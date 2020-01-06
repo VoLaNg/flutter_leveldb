@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-import 'package:ffi/ffi.dart';
 import 'package:leveldb/interop/interop.dart';
 import 'package:leveldb/src/native_wrapper.dart';
 import 'library.dart';
@@ -16,21 +15,19 @@ abstract class Env extends NativeWrapper {
 
 class _Env implements Env {
   final LibLevelDB lib;
-  final Pointer<leveldb_env_t> _ptr;
 
   @override
-  Pointer<leveldb_env_t> get ptr => isDestroyed ? null : _ptr;
+  Pointer<leveldb_env_t> ptr;
 
   @override
-  bool isDestroyed;
+  bool get isDisposed => ptr == null || ptr == nullptr;
 
-  _Env(this.lib) : _ptr = lib.leveldbCreateDefaultEnv();
+  _Env(this.lib) : ptr = lib.leveldbCreateDefaultEnv();
 
   @override
-  void destroy() {
-    if (isDestroyed) return;
-    isDestroyed = true;
+  void dispose() {
+    if (isDisposed) return;
     lib.leveldbEnvDestroy(ptr);
-    free(_ptr);
+    ptr = nullptr;
   }
 }

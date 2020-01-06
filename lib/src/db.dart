@@ -1,13 +1,14 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart' hide allocate;
 import 'package:leveldb/interop/interop.dart';
+import 'package:leveldb/src/native_wrapper.dart';
 import 'package:meta/meta.dart';
 
 import 'library.dart';
 import 'options.dart';
 import 'utils.dart';
 
-abstract class LevelDB {
+abstract class LevelDB extends NativeWrapper {
   /// Open the database with the specified "name".
   factory LevelDB.open({
     @required Options options,
@@ -22,14 +23,15 @@ abstract class LevelDB {
 
 class _LevelDB implements LevelDB {
   final LibLevelDB lib;
-  final Pointer<leveldb_t> dbptr;
+  // final Pointer<leveldb_t> _ptr;
   final Options options;
 
+  // TODO: async open
   _LevelDB({
     @required this.options,
     @required String name,
     @required this.lib,
-  }) : dbptr = open(options, name, lib);
+  }) : ptr = open(options, name, lib);
 
   static Pointer<leveldb_t> open(
     Options options,
@@ -51,4 +53,18 @@ class _LevelDB implements LevelDB {
       );
     }, () => Utf8.toUtf8(name));
   }
+
+  @override
+  void dispose() {
+    if (isDisposed) return;
+    free(ptr);
+    ptr = nullptr;
+    options?.dispose();
+  }
+
+  @override
+  bool get isDisposed => ptr == null || ptr == nullptr;
+
+  @override
+  Pointer<leveldb_t> ptr;
 }

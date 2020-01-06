@@ -1,6 +1,5 @@
 import 'dart:ffi';
 
-import 'package:ffi/ffi.dart';
 import 'package:leveldb/interop/interop.dart';
 import 'package:leveldb/src/library.dart';
 import 'package:meta/meta.dart';
@@ -57,7 +56,6 @@ abstract class FilterPolicy extends NativeWrapper {
 
 class _FilterPolicy implements FilterPolicy {
   final LibLevelDB _lib;
-  final Pointer<leveldb_filterpolicy_t> _ptr;
 
   _FilterPolicy(
     this._lib, {
@@ -65,7 +63,7 @@ class _FilterPolicy implements FilterPolicy {
     @required Pointer<NativeFunction<filterpolicy_create_filter>> createFilter,
     @required Pointer<NativeFunction<filterpolicy_key_may_match>> keyMayMatch,
     @required Pointer<NativeFunction<filterpolicy_name>> name,
-  }) : _ptr = _lib.leveldbFilterpolicyCreate(
+  }) : ptr = _lib.leveldbFilterpolicyCreate(
           destructor,
           createFilter,
           keyMayMatch,
@@ -75,19 +73,18 @@ class _FilterPolicy implements FilterPolicy {
   _FilterPolicy.bloom(
     this._lib,
     int bitsPerKey,
-  ) : _ptr = _lib.leveldbFilterpolicyCreateBloom(bitsPerKey);
+  ) : ptr = _lib.leveldbFilterpolicyCreateBloom(bitsPerKey);
 
   @override
-  bool isDestroyed;
+  Pointer<leveldb_filterpolicy_t> ptr;
 
   @override
-  Pointer<leveldb_filterpolicy_t> get ptr => isDestroyed ? null : _ptr;
-
-  @override
-  void destroy() {
-    if (isDestroyed) return;
-    isDestroyed = true;
-    _lib.leveldbFilterpolicyDestroy(_ptr);
-    free(_ptr);
+  void dispose() {
+    if (isDisposed) return;
+    _lib.leveldbFilterpolicyDestroy(ptr);
+    ptr = nullptr;
   }
+
+  @override
+  bool get isDisposed => ptr == null || ptr == nullptr;
 }
