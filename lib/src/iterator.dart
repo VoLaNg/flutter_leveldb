@@ -6,7 +6,7 @@ import 'raw_data.dart';
 /// The following class defines the interface.  Multiple implementations
 /// are provided by this library.  In particular, iterators are provided
 /// to access the contents of a Table or a DB.
-abstract class DBIterator extends NativeWrapper {
+abstract class DBIterator extends AnyStructure {
   /// An iterator is either positioned at a key/value pair, or
   /// not valid. This method returns true iff the iterator is valid.
   bool get isValid;

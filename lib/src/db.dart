@@ -101,7 +101,7 @@ abstract class LevelDB {
   Future<void> write(BatchUpdates updates, [bool ensured = false]);
 }
 
-class _LevelDB extends NativeWrapper implements LevelDB {
+class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   final LibLevelDB lib;
   final Options options;
 
@@ -143,6 +143,42 @@ class _LevelDB extends NativeWrapper implements LevelDB {
 
   @override
   Pointer<leveldb_t> ptr;
+
+  @override
+  Future<void> delete(RawData key, [bool ensured = false]) {
+    // TODO: implement delete
+    return null;
+  }
+
+  @override
+  Future<RawData> get(RawData key,
+      [bool verifyChecksums = false,
+      bool fillCache = true,
+      Snapshot snapshot]) {
+    // TODO: implement get
+    return null;
+  }
+
+  @override
+  Future<Iterator<KeyValue<RawData, RawData>>> iterator(
+      [bool verifyChecksums = false,
+      bool fillCache = true,
+      Snapshot snapshot]) {
+    // TODO: implement iterator
+    return null;
+  }
+
+  @override
+  Future<void> put(RawData key, RawData value, [bool ensured = false]) {
+    // TODO: implement put
+    return null;
+  }
+
+  @override
+  Future<void> write(BatchUpdates updates, [bool ensured = false]) {
+    // TODO: implement write
+    return null;
+  }
 }
 
 class _Snapshot implements Snapshot {

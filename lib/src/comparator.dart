@@ -16,7 +16,7 @@ import 'native_wrapper.dart';
 /// must be thread-safe since leveldb may invoke its methods concurrently
 /// from multiple threads.
 @experimental
-abstract class Comparator extends NativeWrapper {
+abstract class Comparator extends AnyStructure {
   factory Comparator({
     @required Pointer<NativeFunction<comparator_destructor>> destructor,
     @required Pointer<NativeFunction<comparator_compare>> compare,

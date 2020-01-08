@@ -16,7 +16,7 @@ import 'native_wrapper.dart';
 enum CompressionType { none, snappy }
 
 /// Options to control the behavior of a database (passed to [LevelDB.open])
-abstract class Options extends NativeWrapper<leveldb_options_t> {
+abstract class Options extends AnyStructure {
   /// Create an Options object with default values for all fields.
   factory Options.byDefault({
     Comparator comparator,
@@ -228,7 +228,7 @@ extension on Options {
   }
 }
 
-class _Options extends NativeWrapper<leveldb_options_t> implements Options {
+class _Options extends AnyStructure implements Options {
   final LibLevelDB lib;
 
   @override

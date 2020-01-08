@@ -5,7 +5,7 @@ import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
 
-abstract class Env extends NativeWrapper {
+abstract class Env extends AnyStructure {
   /// Return a default environment suitable for the current operating
   /// system.  Sophisticated users may wish to provide their own Env
   /// implementation instead of relying on this default environment.

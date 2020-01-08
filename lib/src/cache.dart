@@ -5,7 +5,7 @@ import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
 
-abstract class Cache extends NativeWrapper {
+abstract class Cache extends AnyStructure {
   /// Create a new cache with a fixed size capacity.  This implementation
   /// of Cache uses a least-recently-used eviction policy.
   factory Cache.lru(int capacity) => _Cache(Lib.levelDB, capacity);

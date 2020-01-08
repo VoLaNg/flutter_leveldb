@@ -7,7 +7,7 @@ import 'package:leveldb/src/extensions.dart';
 import 'native_wrapper.dart';
 
 /// byte array wrapper
-abstract class RawData extends NativeWrapper<Uint8> {
+abstract class RawData extends DisposablePointer<Uint8> {
   int get length;
   Uint8List get bytes;
 

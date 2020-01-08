@@ -17,7 +17,7 @@ import 'native_wrapper.dart';
 ///
 /// Most people will want to use the builtin bloom filter support (see
 /// NewBloomFilterPolicy() below).
-abstract class FilterPolicy extends NativeWrapper {
+abstract class FilterPolicy extends AnyStructure {
   factory FilterPolicy({
     @required Pointer<NativeFunction<filterpolicy_destructor>> destructor,
     @required Pointer<NativeFunction<filterpolicy_create_filter>> createFilter,

@@ -21,7 +21,7 @@ import 'raw_data.dart';
 /// external synchronization, but if any of the threads may call a
 /// non-const method, all threads accessing the same [BatchUpdates] must use
 /// external synchronization.
-abstract class BatchUpdates extends NativeWrapper {
+abstract class BatchUpdates extends AnyStructure {
   /// Store the mapping "key->value" in the database.
   /// throws [StateError] if method was called after [BatchUpdates.dispose]
   void put(RawData key, RawData value);

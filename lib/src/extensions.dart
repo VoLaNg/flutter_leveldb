@@ -22,7 +22,7 @@ extension Bool on bool {
   int toInt() => this ? 1 : 0;
 }
 
-extension ENativeWrapper on NativeWrapper {
+extension DisposableExtension on DisposablePointer {
   /// if true - the pointer (ptr) can't be accessed or modified
   // ignore: invalid_use_of_protected_member
   bool get isDisposed => ptr == null || ptr == nullptr;
