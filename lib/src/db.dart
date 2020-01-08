@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart' hide allocate;
 import 'package:leveldb/interop/interop.dart';
+import 'package:leveldb/src/write_options.dart';
 import 'package:meta/meta.dart';
 
 import 'batch_updates.dart';
@@ -11,6 +12,7 @@ import 'library.dart';
 import 'native_wrapper.dart';
 import 'options.dart';
 import 'raw_data.dart';
+import 'read_options.dart';
 import 'snapshot.dart';
 import 'utils.dart';
 
@@ -38,7 +40,7 @@ abstract class LevelDB {
   /// (which must belong to the DB that is being read and which must
   /// not have been released).  If [snapshot] is null, use an implicit
   /// snapshot of the state at the beginning of this read operation.
-  Future<RawData> get(
+  RawData get(
     RawData key, [
     bool verifyChecksums = false,
     bool fillCache = true,
@@ -59,7 +61,7 @@ abstract class LevelDB {
   /// (which must belong to the DB that is being read and which must
   /// not have been released).  If [snapshot] is null, use an implicit
   /// snapshot of the state at the beginning of this read operation.
-  Future<Iterator<KeyValue<RawData, RawData>>> iterator([
+  Iterator<KeyValue<RawData, RawData>> iterator([
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot snapshot,
@@ -80,7 +82,7 @@ abstract class LevelDB {
   /// crash semantics as the "write()" system call.  A DB write
   /// with [ensured] == true has similar crash semantics to a "write()"
   /// system call followed by "fsync()".
-  Future<void> put(RawData key, RawData value, [bool ensured = false]);
+  void put(RawData key, RawData value, [bool ensured = false]);
 
   /// Set the database entry for [key] to [value].
   ///
@@ -89,7 +91,7 @@ abstract class LevelDB {
   /// If this flag is true, writes will be slower.
   /// If this flag is false, and the machine crashes, some recent
   /// writes may be lost.
-  Future<void> delete(RawData key, [bool ensured = false]);
+  void delete(RawData key, [bool ensured = false]);
 
   /// Apply the specified updates to the database.
   ///
@@ -98,7 +100,7 @@ abstract class LevelDB {
   /// If this flag is true, writes will be slower.
   /// If this flag is false, and the machine crashes, some recent
   /// writes may be lost.
-  Future<void> write(BatchUpdates updates, [bool ensured = false]);
+  void write(BatchUpdates updates, [bool ensured = false]);
 }
 
 class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
@@ -145,22 +147,71 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   Pointer<leveldb_t> ptr;
 
   @override
-  Future<void> delete(RawData key, [bool ensured = false]) {
-    // TODO: implement delete
-    return null;
+  void delete(RawData key, [bool ensured = false]) {
+    attemptTo('delete');
+
+    return errorHandler((errPtr) => lib.leveldbDelete(
+          ptr,
+          ensured ? WriteOptions.sync.ptr : WriteOptions.noSync.ptr,
+          key.ptr,
+          key.length,
+          errPtr,
+        ));
   }
 
   @override
-  Future<RawData> get(RawData key,
-      [bool verifyChecksums = false,
-      bool fillCache = true,
-      Snapshot snapshot]) {
-    // TODO: implement get
-    return null;
+  RawData get(
+    RawData key, [
+    bool verifyChecksums = false,
+    bool fillCache = true,
+    Snapshot snapshot,
+  ]) {
+    // ignore: invalid_use_of_protected_member
+    final readOptionsAreDefault = ReadOptions.isEqualToDefault(
+      verifyChecksums: verifyChecksums,
+      fillCache: fillCache,
+      snapshot: snapshot,
+    );
+
+    RawData exec(ReadOptions readOptions) {
+      int valLength;
+      final rawDataPtr = allocctx((Pointer<IntPtr> vallen) {
+        final result = errorHandler((errptr) {
+          return lib.leveldbGet(
+            ptr,
+            ReadOptions.defaultOptions.ptr,
+            key.ptr,
+            key.length,
+            vallen,
+            errptr,
+          );
+        });
+        if (vallen != nullptr) {
+          valLength = vallen.value;
+        }
+
+        return result;
+      });
+
+      return RawData.native(rawDataPtr, valLength);
+    }
+
+    if (readOptionsAreDefault) {
+      return exec(ReadOptions.defaultOptions);
+    } else {
+      final options = ReadOptions(
+        fillCache: fillCache,
+        verifyChecksums: verifyChecksums,
+        snapshot: snapshot,
+      );
+      final result = exec(options);
+      options.dispose();
+      return result;
+    }
   }
 
   @override
-  Future<Iterator<KeyValue<RawData, RawData>>> iterator(
+  Iterator<KeyValue<RawData, RawData>> iterator(
       [bool verifyChecksums = false,
       bool fillCache = true,
       Snapshot snapshot]) {
@@ -169,15 +220,13 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   }
 
   @override
-  Future<void> put(RawData key, RawData value, [bool ensured = false]) {
+  void put(RawData key, RawData value, [bool ensured = false]) {
     // TODO: implement put
-    return null;
   }
 
   @override
-  Future<void> write(BatchUpdates updates, [bool ensured = false]) {
+  void write(BatchUpdates updates, [bool ensured = false]) {
     // TODO: implement write
-    return null;
   }
 }
 

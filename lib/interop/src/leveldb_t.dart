@@ -105,21 +105,19 @@ typedef leveldb_write = Void Function(
 ///                                  const char* key, size_t keylen, size_t* vallen,
 ///                                  char** errptr);
 /// ```
-typedef Leveldb_get = Pointer<Utf8> Function(
+typedef Leveldb_get = Pointer<Uint8> Function(
   Pointer<leveldb_t> db,
   Pointer<leveldb_readoptions_t> options,
   Pointer<Uint8> key,
   int keylen,
-  Pointer<Uint8> val,
   Pointer<IntPtr> vallen,
   Pointer<Pointer<Utf8>> errptr,
 );
-typedef leveldb_get = Pointer<Utf8> Function(
+typedef leveldb_get = Pointer<Uint8> Function(
   Pointer<leveldb_t> db,
   Pointer<leveldb_readoptions_t> options,
   Pointer<Uint8> key,
   IntPtr keylen,
-  Pointer<Uint8> val,
   Pointer<IntPtr> vallen,
   Pointer<Pointer<Utf8>> errptr,
 );

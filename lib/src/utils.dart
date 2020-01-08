@@ -19,6 +19,7 @@ T allocctx<T, U extends NativeType>(
   return result;
 }
 
+// TODO: return null when errptr == 'Status::IsNotFound()'
 T errorHandler<T>(T Function(Pointer<Pointer<Utf8>> errptr) f) {
   final Pointer<Pointer<Utf8>> errptr = allocate();
   errptr.value = nullptr;
