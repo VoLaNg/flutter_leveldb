@@ -1,12 +1,12 @@
 import 'dart:ffi';
 import 'package:leveldb/interop/interop.dart';
-import 'package:leveldb/src/library.dart';
 
 import 'cache.dart';
 import 'comparator.dart';
 import 'env.dart';
 import 'extensions.dart';
 import 'filter_policy.dart';
+import 'library.dart';
 import 'native_wrapper.dart';
 
 /// DB contents are stored in a set of blocks, each of which holds a
@@ -339,18 +339,18 @@ extension _OptionsSetup on Pointer<leveldb_options_t> {
   void setComparator(Comparator v, LibLevelDB lib) =>
       v != null ? lib.leveldbOptionsSetComparator(this, v.ptr) : null;
 
-  void setCompressionType(CompressionType v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetCompression(this, v.toNative()) : null;
-
-  void setCreateIfMissing(bool v, LibLevelDB lib) => v != null
-      ? lib.leveldbOptionsSetCreateIfMissing(this, v.toNative())
+  void setCompressionType(CompressionType v, LibLevelDB lib) => v != null
+      ? lib.leveldbOptionsSetCompression(this, v.associatedValue())
       : null;
+
+  void setCreateIfMissing(bool v, LibLevelDB lib) =>
+      v != null ? lib.leveldbOptionsSetCreateIfMissing(this, v.toInt()) : null;
 
   void setEnv(Env v, LibLevelDB lib) =>
       v != null ? lib.leveldbOptionsSetEnv(this, v.ptr) : null;
 
   void setErrorIfExists(bool v, LibLevelDB lib) =>
-      v != null ? lib.leveldbOptionsSetErrorIfExists(this, v.toNative()) : null;
+      v != null ? lib.leveldbOptionsSetErrorIfExists(this, v.toInt()) : null;
 
   void setFilterPolicy(FilterPolicy v, LibLevelDB lib) =>
       v != null ? lib.leveldbOptionsSetFilterPolicy(this, v.ptr) : null;
@@ -361,9 +361,8 @@ extension _OptionsSetup on Pointer<leveldb_options_t> {
   void setMaxOpenFiles(int v, LibLevelDB lib) =>
       v != null ? lib.leveldbOptionsSetMaxOpenFiles(this, v) : null;
 
-  void setParanoidChecks(bool v, LibLevelDB lib) => v != null
-      ? lib.leveldbOptionsSetParanoidChecks(this, v.toNative())
-      : null;
+  void setParanoidChecks(bool v, LibLevelDB lib) =>
+      v != null ? lib.leveldbOptionsSetParanoidChecks(this, v.toInt()) : null;
 
   void setWriteBufferSize(int v, LibLevelDB lib) =>
       v != null ? lib.leveldbOptionsSetWriteBufferSize(this, v) : null;

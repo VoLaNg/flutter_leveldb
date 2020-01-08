@@ -1,8 +1,9 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
-import 'package:leveldb/src/library.dart';
-import 'package:leveldb/src/native_wrapper.dart';
+import 'extensions.dart';
+import 'library.dart';
+import 'native_wrapper.dart';
 
 abstract class Cache extends NativeWrapper {
   /// Create a new cache with a fixed size capacity.  This implementation
@@ -12,9 +13,6 @@ abstract class Cache extends NativeWrapper {
 
 class _Cache implements Cache {
   final LibLevelDB lib;
-
-  @override
-  bool get isDisposed => ptr == null || ptr == nullptr;
 
   @override
   Pointer<leveldb_cache_t> ptr;

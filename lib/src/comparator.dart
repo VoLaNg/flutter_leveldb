@@ -1,9 +1,10 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
-import 'package:leveldb/src/library.dart';
 import 'package:meta/meta.dart';
 
+import 'extensions.dart';
+import 'library.dart';
 import 'native_wrapper.dart';
 
 // !: [Pointer.fromFunction] returned function address can only be invoked on the mutator (main)
@@ -46,9 +47,6 @@ class _Comparator implements Comparator {
           compare,
           name,
         );
-
-  @override
-  bool get isDisposed => ptr == null || ptr == nullptr;
 
   @override
   Pointer<leveldb_comparator_t> ptr;

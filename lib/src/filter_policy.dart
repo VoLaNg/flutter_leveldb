@@ -1,9 +1,10 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
-import 'package:leveldb/src/library.dart';
 import 'package:meta/meta.dart';
 
+import 'extensions.dart';
+import 'library.dart';
 import 'native_wrapper.dart';
 
 /// A database can be configured with a custom FilterPolicy object.
@@ -84,7 +85,4 @@ class _FilterPolicy implements FilterPolicy {
     _lib.leveldbFilterpolicyDestroy(ptr);
     ptr = nullptr;
   }
-
-  @override
-  bool get isDisposed => ptr == null || ptr == nullptr;
 }

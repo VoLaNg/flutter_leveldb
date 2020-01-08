@@ -1,8 +1,9 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
-import 'package:leveldb/src/native_wrapper.dart';
+import 'extensions.dart';
 import 'library.dart';
+import 'native_wrapper.dart';
 
 abstract class Env extends NativeWrapper {
   /// Return a default environment suitable for the current operating
@@ -18,9 +19,6 @@ class _Env implements Env {
 
   @override
   Pointer<leveldb_env_t> ptr;
-
-  @override
-  bool get isDisposed => ptr == null || ptr == nullptr;
 
   _Env(this.lib) : ptr = lib.leveldbCreateDefaultEnv();
 
