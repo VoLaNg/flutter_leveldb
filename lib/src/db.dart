@@ -21,12 +21,40 @@ abstract class LevelDB {
   factory LevelDB.open({
     @required Options options,
     @required String name,
-  }) =>
-      _LevelDB(
-        options: options,
-        name: name,
-        lib: Lib.levelDB,
-      );
+  }) {
+    assert(
+      options != null,
+      'LevelDB.open: "options" parameter is required',
+    );
+    assert(
+      name?.isNotEmpty ?? false,
+      'LevelDB.open: "name" parameter is required',
+    );
+    return _LevelDB.open(
+      Lib.levelDB,
+      options: options,
+      name: name,
+    );
+  }
+
+  factory LevelDB.pointer({
+    @required Pointer<leveldb_t> pointer,
+    @required Options options,
+  }) {
+    assert(
+      options != null,
+      'LevelDB.open: "options" parameter is required',
+    );
+    assert(
+      pointer != null && pointer != nullptr,
+      'LevelDB.open: "pointer" parameter is required',
+    );
+    return _LevelDB.ptr(
+      Lib.levelDB,
+      options: options,
+      ptr: pointer,
+    );
+  }
 
   /// Returns the corresponding value for [key]
   ///
@@ -41,11 +69,11 @@ abstract class LevelDB {
   /// not have been released).  If [snapshot] is null, use an implicit
   /// snapshot of the state at the beginning of this read operation.
   RawData get(
-    RawData key, [
+    RawData key, {
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot snapshot,
-  ]);
+  });
 
   /// Return an iterator over the contents of the database.
   /// Caller should [dispose] the iterator when it is no longer needed.
@@ -61,11 +89,11 @@ abstract class LevelDB {
   /// (which must belong to the DB that is being read and which must
   /// not have been released).  If [snapshot] is null, use an implicit
   /// snapshot of the state at the beginning of this read operation.
-  Iterator<KeyValue<RawData, RawData>> iterator([
+  Iterator<KeyValue<RawData, RawData>> iterator({
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot snapshot,
-  ]);
+  });
 
   /// Set the database entry for [key] to [value].
   ///
@@ -82,7 +110,7 @@ abstract class LevelDB {
   /// crash semantics as the "write()" system call.  A DB write
   /// with [ensured] == true has similar crash semantics to a "write()"
   /// system call followed by "fsync()".
-  void put(RawData key, RawData value, [bool ensured = false]);
+  void put(RawData key, RawData value, {bool ensured = false});
 
   /// Set the database entry for [key] to [value].
   ///
@@ -91,7 +119,7 @@ abstract class LevelDB {
   /// If this flag is true, writes will be slower.
   /// If this flag is false, and the machine crashes, some recent
   /// writes may be lost.
-  void delete(RawData key, [bool ensured = false]);
+  void delete(RawData key, {bool ensured = false});
 
   /// Apply the specified updates to the database.
   ///
@@ -100,33 +128,34 @@ abstract class LevelDB {
   /// If this flag is true, writes will be slower.
   /// If this flag is false, and the machine crashes, some recent
   /// writes may be lost.
-  void write(BatchUpdates updates, [bool ensured = false]);
+  void write(BatchUpdates updates, {bool ensured = false});
 }
 
 class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   final LibLevelDB lib;
   final Options options;
 
-  // TODO: async open
-  _LevelDB({
+  @override
+  Pointer<leveldb_t> ptr;
+
+  // TODO: async open?
+  _LevelDB.open(
+    this.lib, {
     @required this.options,
     @required String name,
-    @required this.lib,
-  }) : ptr = open(options, name, lib);
+  }) : ptr = _open(options, name, lib);
 
-  static Pointer<leveldb_t> open(
+  _LevelDB.ptr(
+    this.lib, {
+    @required this.ptr,
+    @required this.options,
+  });
+
+  static Pointer<leveldb_t> _open(
     Options options,
     String name,
     LibLevelDB lib,
   ) {
-    assert(
-      options != null,
-      'LevelDB.open: Name parameter is required',
-    );
-    assert(
-      name?.isNotEmpty ?? false,
-      'LevelDB.open: Name parameter is required',
-    );
     return allocctx((Pointer<Utf8> strptr) {
       return errorHandler(
         // ignore: invalid_use_of_protected_member
@@ -144,10 +173,8 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   }
 
   @override
-  Pointer<leveldb_t> ptr;
-
-  @override
-  void delete(RawData key, [bool ensured = false]) {
+  void delete(RawData key, {bool ensured = false}) {
+    assert(key != null && !key.isDisposed, 'Key is empty');
     attemptTo('delete');
 
     return errorHandler((errPtr) => lib.leveldbDelete(
@@ -161,11 +188,13 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
 
   @override
   RawData get(
-    RawData key, [
+    RawData key, {
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot snapshot,
-  ]) {
+  }) {
+    assert(key != null && !key.isDisposed, 'Key is empty');
+    attemptTo('get');
     // ignore: invalid_use_of_protected_member
     final readOptionsAreDefault = ReadOptions.isEqualToDefault(
       verifyChecksums: verifyChecksums,
@@ -211,21 +240,34 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   }
 
   @override
-  Iterator<KeyValue<RawData, RawData>> iterator(
-      [bool verifyChecksums = false,
-      bool fillCache = true,
-      Snapshot snapshot]) {
+  Iterator<KeyValue<RawData, RawData>> iterator({
+    bool verifyChecksums = false,
+    bool fillCache = true,
+    Snapshot snapshot,
+  }) {
     // TODO: implement iterator
     return null;
   }
 
   @override
-  void put(RawData key, RawData value, [bool ensured = false]) {
-    // TODO: implement put
+  void put(RawData key, RawData value, {bool ensured = false}) {
+    assert(key != null && !key.isDisposed, 'Key is empty');
+    assert(value != null && !value.isDisposed, 'Value is empty');
+    return errorHandler((errPtr) {
+      return lib.leveldbPut(
+        ptr,
+        ensured ? WriteOptions.sync.ptr : WriteOptions.noSync.ptr,
+        key.ptr,
+        key.length,
+        value.ptr,
+        value.length,
+        errPtr,
+      );
+    });
   }
 
   @override
-  void write(BatchUpdates updates, [bool ensured = false]) {
+  void write(BatchUpdates updates, {bool ensured = false}) {
     // TODO: implement write
   }
 }

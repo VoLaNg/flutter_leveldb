@@ -16,6 +16,9 @@ abstract class LevelDBException implements Exception {
 class ErrptrException implements LevelDBException {
   final String errptr;
   ErrptrException(this.errptr);
+
+  @override
+  String toString() => _humanReadableDescription(errptr) ?? errptr;
 }
 
 class CombinedExceptions implements LevelDBException {
@@ -30,4 +33,14 @@ class CombinedExceptions implements LevelDBException {
       exceptions.add(e);
     }
   }
+}
+
+String _humanReadableDescription(String from) {
+  if (from.contains('lock') && from.contains('already held by process')) {
+    return 'LevelDB do not support opening 1 file more than by 1 process '
+        'at the same time. Make sure you closed previous instance '
+        'by [LevelDB.close()] before opening again. Also this issue may '
+        'appear after Flutter Hot Restart';
+  }
+  return null;
 }

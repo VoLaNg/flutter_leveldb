@@ -4,9 +4,12 @@ import 'package:leveldb/src/exceptions.dart';
 
 T allocctx<T, U extends NativeType>(
   T Function(Pointer<U> v) f, [
-  Pointer<U> Function() allocationFunction = allocate,
-  void Function(Pointer<U>) freeFunction = free,
+  Pointer<U> Function() allocationFunction,
+  void Function(Pointer<U>) freeFunction,
 ]) {
+  allocationFunction ??= allocate;
+  freeFunction ??= free;
+
   final Pointer<U> v = allocationFunction();
   T result;
   try {
@@ -19,7 +22,6 @@ T allocctx<T, U extends NativeType>(
   return result;
 }
 
-// TODO: return null when errptr == 'Status::IsNotFound()'
 T errorHandler<T>(T Function(Pointer<Pointer<Utf8>> errptr) f) {
   final Pointer<Pointer<Utf8>> errptr = allocate();
   errptr.value = nullptr;
