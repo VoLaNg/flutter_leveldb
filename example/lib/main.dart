@@ -7,19 +7,33 @@ import 'package:flutter/material.dart';
 import 'package:leveldb/leveldb.dart';
 
 void main() async {
-  runApp(Container());
+  runApp(Container(color: Colors.purple));
 
+  // WARNING: Do not use temp directory as database location
   Directory tempDir = await getTemporaryDirectory();
   String tempPath = tempDir.path;
-  tempPath = path.join(tempPath, 'test.leveldb');
+  tempPath = path.join(tempPath, 'test2.leveldb');
+
+  openPutClose(tempPath, Options.byDefault(createIfMissing: true));
+  openGetClose(tempPath, Options.byDefault(createIfMissing: true));
 
   final db = LevelDB.open(
     options: Options.byDefault(createIfMissing: true),
-    name: tempPath,
+    filePath: tempPath,
   );
 
-  final key = Uint8List.fromList('example'.codeUnits);
-  final value = Uint8List.fromList('world'.codeUnits);
+  printAllValues(db);
+  db.close();
+}
+
+void openPutClose(String filePath, Options options) {
+  final db = LevelDB.open(
+    options: options,
+    filePath: filePath,
+  );
+
+  final key = Uint8List.fromList('fooKey'.codeUnits);
+  final value = Uint8List.fromList('barValue'.codeUnits);
 
   void put() {
     final k = RawData.fromList(key);
@@ -28,6 +42,18 @@ void main() async {
     k.dispose();
     v.dispose();
   }
+
+  put();
+  db.close();
+}
+
+void openGetClose(String filePath, Options options) {
+  final db = LevelDB.open(
+    options: options,
+    filePath: filePath,
+  );
+
+  final key = Uint8List.fromList('fooKey'.codeUnits);
 
   String get() {
     final k = RawData.fromList(key);
@@ -38,7 +64,8 @@ void main() async {
     return result;
   }
 
-  put();
   final str = get();
   print(str);
+
+  db.close();
 }

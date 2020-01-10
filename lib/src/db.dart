@@ -27,6 +27,10 @@ abstract class LevelDB {
       'LevelDB.open: "options" parameter is required',
     );
     assert(
+      !options.isDisposed,
+      'LevelDB.open: "options" parameter is disposed',
+    );
+    assert(
       filePath?.isNotEmpty ?? false,
       'LevelDB.open: "filePath" parameter is required',
     );
@@ -44,6 +48,10 @@ abstract class LevelDB {
     assert(
       options != null,
       'LevelDB.open: "options" parameter is required',
+    );
+    assert(
+      !options.isDisposed,
+      'LevelDB.open: "options" parameter is disposed',
     );
     assert(
       pointer != null && pointer != nullptr,
@@ -157,6 +165,11 @@ abstract class LevelDB {
   /// snapshot is no longer needed.
   Snapshot getSnapshot();
 
+  /// Closes the database.
+  /// After closing any database invocations or using [LevelDB.options] are prohibited.
+  /// Make sure you [dispose] all created snapshots before this call.
+  void close();
+
   /// Compact the underlying storage for the key range [*begin,*end].
   /// In particular, deleted and overwritten versions are discarded,
   /// and the data is rearranged to reduce the cost of operations
@@ -247,9 +260,12 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   }
 
   @override
+  void close() => dispose();
+
+  @override
   void dispose() {
     if (isDisposed) return;
-    free(ptr);
+    lib.leveldbClose(ptr);
     ptr = nullptr;
     options?.dispose();
   }
@@ -326,7 +342,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot snapshot,
-    Position initialPosition = const Position.first(),
+    Position<RawData> initialPosition = const Position.first(),
   }) {
     attemptTo('iterator');
     // ignore: invalid_use_of_protected_member
