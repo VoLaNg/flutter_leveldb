@@ -50,12 +50,12 @@ typedef leveldb_iter_seek_to_last = Void Function(Pointer<leveldb_iterator_t>);
 /// ```
 typedef Leveldb_iter_seek = Pointer<Uint8> Function(
   Pointer<leveldb_iterator_t>,
-  Pointer<Pointer<Uint8>> k,
+  Pointer<Uint8> k,
   int klen,
 );
 typedef leveldb_iter_seek = Pointer<Uint8> Function(
   Pointer<leveldb_iterator_t>,
-  Pointer<Pointer<Uint8>> k,
+  Pointer<Uint8> k,
   IntPtr klen,
 );
 
@@ -101,11 +101,11 @@ typedef leveldb_iter_value = Pointer<Uint8> Function(
 /// LEVELDB_EXPORT void leveldb_iter_get_error(const leveldb_iterator_t*,
 ///                                            char** errptr);
 /// ```
-typedef Leveldb_iter_get_error = Pointer<Uint8> Function(
+typedef Leveldb_iter_get_error = void Function(
   Pointer<leveldb_iterator_t>,
   Pointer<Pointer<Utf8>> errptr,
 );
-typedef leveldb_iter_get_error = Pointer<Uint8> Function(
+typedef leveldb_iter_get_error = Void Function(
   Pointer<leveldb_iterator_t>,
   Pointer<Pointer<Utf8>> errptr,
 );

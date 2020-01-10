@@ -17,23 +17,23 @@ import 'snapshot.dart';
 import 'utils.dart';
 
 abstract class LevelDB {
-  /// Open the database with the specified "name".
+  /// Open the database with the specified [filePath].
   factory LevelDB.open({
     @required Options options,
-    @required String name,
+    @required String filePath,
   }) {
     assert(
       options != null,
       'LevelDB.open: "options" parameter is required',
     );
     assert(
-      name?.isNotEmpty ?? false,
-      'LevelDB.open: "name" parameter is required',
+      filePath?.isNotEmpty ?? false,
+      'LevelDB.open: "filePath" parameter is required',
     );
     return _LevelDB.open(
       Lib.levelDB,
       options: options,
-      name: name,
+      name: filePath,
     );
   }
 
@@ -54,6 +54,27 @@ abstract class LevelDB {
       options: options,
       ptr: pointer,
     );
+  }
+
+  /// If a DB cannot be opened, you may attempt to call this method to
+  /// resurrect as much of the contents of the database as possible.
+  /// Some data may be lost, so be careful when calling this function
+  /// on a database that contains important information.
+  ///
+  /// throws [LevelDBException]
+  static void repair(String filePath, Options options) {
+    return _SLevelDB.repair(filePath, options);
+  }
+
+  /// Destroy the contents of the specified database.
+  /// Be very careful using this method.
+  ///
+  /// Note: For backwards compatibility, if DestroyDB is unable to list the
+  /// database files, Status::OK() will still be returned masking this failure.
+  ///
+  /// throws [LevelDBException]
+  static void destroy(String filePath, Options options) {
+    return _SLevelDB.destroy(filePath, options);
   }
 
   /// Returns the corresponding value for [key]
@@ -129,6 +150,68 @@ abstract class LevelDB {
   /// If this flag is false, and the machine crashes, some recent
   /// writes may be lost.
   void write(BatchUpdates updates, {bool ensured = false});
+
+  /// Return a handle to the current DB state.  Iterators created with
+  /// this handle will all observe a stable snapshot of the current DB
+  /// state.  The caller must call [Snapshot.dispose] when the
+  /// snapshot is no longer needed.
+  Snapshot getSnapshot();
+
+  /// Compact the underlying storage for the key range [*begin,*end].
+  /// In particular, deleted and overwritten versions are discarded,
+  /// and the data is rearranged to reduce the cost of operations
+  /// needed to access the data.  This operation should typically only
+  /// be invoked by users who understand the underlying implementation.
+  ///
+  /// [beginKey] == null is treated as a key before all keys in the database.
+  /// [endKey] == null is treated as a key after all keys in the database.
+  /// Therefore the following call will compact the entire database:
+  /// [LevelDB.compact(null, null)]
+  void compact(RawData beginKey, RawData endKey);
+
+  // --- Statistics ---
+
+  /// Number of files at level
+  int numFilesAtLevel(int level);
+
+  /// returns a multi-line string that describes statistics
+  /// about the internal operation of the DB
+  String stats();
+
+  /// returns a multi-line string that describes all
+  /// of the sstables that make up the db contents.
+  String sstables();
+
+  /// returns the approximate number of
+  /// bytes of memory in use by the DB.
+  int approximateMemoryUsage();
+}
+
+abstract class _Properties {
+  static const num_files_at_level = 'leveldb.num-files-at-level<N>';
+  static const stats = 'leveldb.stats';
+  static const sstables = 'leveldb.sstables';
+  static const approximate_memory_usage = 'leveldb.approximate-memory-usage';
+}
+
+extension _SLevelDB on _LevelDB {
+  static void repair(String filePath, Options options) {
+    return errorHandler((errPtr) {
+      return allocctx((strPtr) {
+        // ignore: invalid_use_of_protected_member
+        return Lib.levelDB.leveldbRepairDb(options.ptr, strPtr, errPtr);
+      }, () => Utf8.toUtf8(filePath));
+    });
+  }
+
+  static void destroy(String filePath, Options options) {
+    return errorHandler((errPtr) {
+      return allocctx((strPtr) {
+        // ignore: invalid_use_of_protected_member
+        return Lib.levelDB.leveldbDestroyDb(options.ptr, strPtr, errPtr);
+      }, () => Utf8.toUtf8(filePath));
+    });
+  }
 }
 
 class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
@@ -138,7 +221,6 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   @override
   Pointer<leveldb_t> ptr;
 
-  // TODO: async open?
   _LevelDB.open(
     this.lib, {
     @required this.options,
@@ -244,9 +326,35 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     bool verifyChecksums = false,
     bool fillCache = true,
     Snapshot snapshot,
+    Position initialPosition = const Position.first(),
   }) {
-    // TODO: implement iterator
-    return null;
+    attemptTo('iterator');
+    // ignore: invalid_use_of_protected_member
+    final readOptionsAreDefault = ReadOptions.isEqualToDefault(
+      verifyChecksums: verifyChecksums,
+      fillCache: fillCache,
+      snapshot: snapshot,
+    );
+
+    DBIterator exec(ReadOptions readOptions) {
+      return DBIterator.atPosition(
+        dbptr: lib.leveldbCreateIterator(ptr, readOptions.ptr),
+        initialPosition: initialPosition,
+      );
+    }
+
+    if (readOptionsAreDefault) {
+      return exec(ReadOptions.defaultOptions);
+    } else {
+      final options = ReadOptions(
+        fillCache: fillCache,
+        verifyChecksums: verifyChecksums,
+        snapshot: snapshot,
+      );
+      final result = exec(options);
+      options.dispose();
+      return result;
+    }
   }
 
   @override
@@ -268,7 +376,73 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
 
   @override
   void write(BatchUpdates updates, {bool ensured = false}) {
-    // TODO: implement write
+    final _updatesAreValid = !(updates?.isDisposed ?? true);
+    assert(_updatesAreValid, 'updates is null or disposed');
+    if (!_updatesAreValid) return;
+
+    return errorHandler((errPtr) {
+      return lib.leveldbWrite(
+        ptr,
+        ensured ? WriteOptions.sync.ptr : WriteOptions.noSync.ptr,
+        updates.ptr,
+        errPtr,
+      );
+    });
+  }
+
+  @override
+  Snapshot getSnapshot() {
+    attemptTo('getSnapshot');
+    return _Snapshot(lib, ptr);
+  }
+
+  @override
+  void compact(RawData beginKey, RawData endKey) {
+    attemptTo('compact');
+    return lib.leveldbCompactRange(
+      ptr,
+      beginKey.ptr,
+      beginKey.length,
+      endKey.ptr,
+      endKey.length,
+    );
+  }
+
+  String _getProperty(String prop) {
+    final str = allocctx((strPtr) {
+      return lib.leveldbPropertyValue(ptr, strPtr);
+    }, () => Utf8.toUtf8(prop));
+    final result = Utf8.fromUtf8(str);
+    free(str);
+    return result;
+  }
+
+  @override
+  int approximateMemoryUsage() {
+    attemptTo('approximateMemoryUsage');
+    return int.tryParse(
+      _getProperty(_Properties.approximate_memory_usage),
+    );
+  }
+
+  @override
+  int numFilesAtLevel(int level) {
+    attemptTo('numFilesAtLevel');
+    return int.tryParse(
+      _getProperty(_Properties.num_files_at_level),
+    );
+  }
+
+  @override
+  String sstables() {
+    attemptTo('sstables');
+    return _getProperty(_Properties.sstables);
+  }
+
+  @override
+  String stats() {
+    attemptTo('stats');
+    return _getProperty(_Properties.stats);
   }
 }
 
