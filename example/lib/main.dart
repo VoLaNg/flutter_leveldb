@@ -22,7 +22,6 @@ void main() async {
     filePath: tempPath,
   );
 
-  printAllValues(db);
   db.close();
 }
 

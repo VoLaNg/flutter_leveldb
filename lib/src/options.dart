@@ -193,7 +193,7 @@ abstract class Options extends AnyStructure {
   }
 }
 
-extension on Options {
+extension CopyableOptions on Options {
   Options copyWith({
     Comparator comparator,
     FilterPolicy filterPolicy,
@@ -209,7 +209,7 @@ extension on Options {
     int maxFileSize,
     CompressionType compressionType,
   }) {
-    return _Options(
+    return Options.byDefault(
       Lib.levelDB,
       comparator: comparator ?? this.comparator,
       filterPolicy: filterPolicy ?? this.filterPolicy,
