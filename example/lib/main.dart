@@ -1,8 +1,8 @@
-import 'dart:io';
+// import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
+// import 'package:path/path.dart' as path;
+// import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:leveldb/leveldb.dart';
 
@@ -10,19 +10,19 @@ void main() async {
   runApp(Container(color: Colors.purple));
 
   // WARNING: Do not use temp directory as database location
-  Directory tempDir = await getTemporaryDirectory();
-  String tempPath = tempDir.path;
-  tempPath = path.join(tempPath, 'test2.leveldb');
+  // Directory tempDir = await getTemporaryDirectory();
+  // String tempPath = tempDir.path;
+  // tempPath = path.join(tempPath, 'test2.leveldb');
 
-  openPutClose(tempPath, Options.byDefault(createIfMissing: true));
-  openGetClose(tempPath, Options.byDefault(createIfMissing: true));
+  // openPutClose(tempPath, Options.byDefault(createIfMissing: true));
+  // openGetClose(tempPath, Options.byDefault(createIfMissing: true));
 
-  final db = LevelDB.open(
-    options: Options.byDefault(createIfMissing: true),
-    filePath: tempPath,
-  );
+  // final db = LevelDB.open(
+  //   options: Options.byDefault(createIfMissing: true),
+  //   filePath: tempPath,
+  // );
 
-  db.close();
+  // db.close();
 }
 
 void openPutClose(String filePath, Options options) {

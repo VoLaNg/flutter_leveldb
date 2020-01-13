@@ -11,4 +11,3 @@ analyzer:
 linter:
   rules:
     camel_case_types: false
-    invalid_use_of_protected_member: false

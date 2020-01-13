@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'dart:ffi';
 import 'package:leveldb/interop/interop.dart';
 
@@ -210,7 +212,6 @@ extension CopyableOptions on Options {
     CompressionType compressionType,
   }) {
     return Options.byDefault(
-      Lib.levelDB,
       comparator: comparator ?? this.comparator,
       filterPolicy: filterPolicy ?? this.filterPolicy,
       createIfMissing: createIfMissing ?? this.createIfMissing,

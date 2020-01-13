@@ -1,8 +1,9 @@
 import 'dart:ffi';
 
-import 'package:flutter/material.dart';
 import 'package:leveldb/interop/interop.dart';
+import 'package:meta/meta.dart' show protected;
 
+import 'constants.dart';
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
@@ -94,7 +95,12 @@ class _ReadOptions implements ReadOptions {
     if (isDisposed) return;
     lib.leveldbReadoptionsDestroy(ptr);
     ptr == nullptr;
-    // TODO: print friendly reminder, Snapshot is not disposed.
+    if (!kReleaseMode && (snapshot?.isDisposed ?? false)) {
+      print(
+        "Friendly reminder from [ReadOptions.dispose]: "
+        "don't forget to dispose [Snapshot]",
+      );
+    }
   }
 
   @override
