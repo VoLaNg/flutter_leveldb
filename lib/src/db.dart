@@ -73,8 +73,12 @@ abstract class LevelDB {
   /// on a database that contains important information.
   ///
   /// throws [LevelDBException]
-  static void repair(String filePath, Options options) {
-    return _SLevelDB.repair(filePath, options);
+  static void repair(
+    String filePath,
+    Options options, [
+    @visibleForTesting LibLevelDB lib,
+  ]) {
+    return _SLevelDB.repair(filePath, options, lib);
   }
 
   /// Destroy the contents of the specified database.
@@ -84,8 +88,12 @@ abstract class LevelDB {
   /// database files, Status::OK() will still be returned masking this failure.
   ///
   /// throws [LevelDBException]
-  static void destroy(String filePath, Options options) {
-    return _SLevelDB.destroy(filePath, options);
+  static void destroy(
+    String filePath,
+    Options options, [
+    @visibleForTesting LibLevelDB lib,
+  ]) {
+    return _SLevelDB.destroy(filePath, options, lib);
   }
 
   /// Returns the corresponding value for [key]

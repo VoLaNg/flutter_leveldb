@@ -1,3 +1,4 @@
+import 'package:leveldb/interop/interop.dart';
 import 'package:test/test.dart' as t;
 import 'package:leveldb/leveldb.dart';
 import 'package:path_provider/path_provider.dart';
@@ -5,9 +6,10 @@ import 'package:path/path.dart' as path;
 import 'utils.dart';
 
 void main() {
+  final lib = LibLevelDB.lookupLib(TestDyLib.test_load());
   t.group('Iterator', () {
     LevelDB db;
-    Options options = Options.byDefault(createIfMissing: true);
+    Options options = Options.byDefault(createIfMissing: true, lib: lib);
     String filePath;
     Map<String, String> entries;
 
@@ -19,6 +21,7 @@ void main() {
         'iterator.leveldb',
       ]);
       db = LevelDB.open(
+        lib: lib,
         options: options.copyWith(),
         filePath: filePath,
       );
@@ -39,7 +42,7 @@ void main() {
     // close and delete database
     t.tearDownAll(() async {
       db.close();
-      LevelDB.destroy(filePath, options);
+      LevelDB.destroy(filePath, options, lib);
       options.dispose();
     });
 
