@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
+import 'package:meta/meta.dart';
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
@@ -11,7 +12,8 @@ abstract class Env extends AnyStructure {
   /// implementation instead of relying on this default environment.
   ///
   /// The result of Default() belongs to leveldb and must never be deleted.
-  factory Env.byDefault() => _Env(Lib.levelDB);
+  factory Env.byDefault([@visibleForTesting LibLevelDB lib]) =>
+      _Env(lib ?? Lib.levelDB);
 }
 
 class _Env implements Env {

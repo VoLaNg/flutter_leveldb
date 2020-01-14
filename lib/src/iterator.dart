@@ -4,6 +4,7 @@ import 'package:leveldb/interop/interop.dart';
 import 'package:leveldb/src/kv_entry.dart';
 import 'package:leveldb/src/library.dart';
 import 'package:leveldb/src/utils.dart';
+import 'package:meta/meta.dart';
 
 import 'extensions.dart';
 import 'native_wrapper.dart';
@@ -18,8 +19,9 @@ abstract class DBIterator extends AnyStructure
   factory DBIterator.atPosition({
     Pointer<leveldb_iterator_t> dbptr,
     Position<RawData> initialPosition = const Position(),
+    @visibleForTesting LibLevelDB lib,
   }) {
-    final itr = _DBIterator.ptr(Lib.levelDB, dbptr);
+    final itr = _DBIterator.ptr(lib ?? Lib.levelDB, dbptr);
     initialPosition?.setPosition(itr);
     return itr;
   }

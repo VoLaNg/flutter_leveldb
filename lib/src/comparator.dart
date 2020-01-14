@@ -21,12 +21,13 @@ abstract class Comparator extends AnyStructure {
     @required Pointer<NativeFunction<comparator_destructor>> destructor,
     @required Pointer<NativeFunction<comparator_compare>> compare,
     @required Pointer<NativeFunction<comparator_name>> name,
+    @visibleForTesting LibLevelDB lib,
   }) {
     assert(destructor != null);
     assert(compare != null);
     assert(name != null);
     return _Comparator(
-      Lib.levelDB,
+      lib ?? Lib.levelDB,
       destructor: destructor,
       compare: compare,
       name: name,

@@ -1,5 +1,6 @@
 import 'dart:ffi';
 import 'package:leveldb/interop/interop.dart';
+import 'package:meta/meta.dart';
 
 import 'extensions.dart';
 import 'library.dart';
@@ -39,7 +40,8 @@ abstract class BatchUpdates extends AnyStructure {
 
   void operator +(BatchUpdates obj);
 
-  factory BatchUpdates() => _BatchUpdates(Lib.levelDB);
+  factory BatchUpdates([@visibleForTesting LibLevelDB lib]) =>
+      _BatchUpdates(lib ?? Lib.levelDB);
 }
 
 class _BatchUpdates implements BatchUpdates {

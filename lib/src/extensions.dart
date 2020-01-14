@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_use_of_protected_member
 import 'dart:ffi';
 import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
@@ -24,7 +25,6 @@ extension Bool on bool {
 
 extension DisposableExtension on DisposablePointer {
   /// if true - the pointer (ptr) can't be accessed or modified
-  // ignore: invalid_use_of_protected_member
   bool get isDisposed => ptr == null || ptr == nullptr;
 
   void attemptTo(String funcName) {

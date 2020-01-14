@@ -1,7 +1,7 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
-import 'package:meta/meta.dart' show protected;
+import 'package:meta/meta.dart' show protected, visibleForTesting;
 
 import 'constants.dart';
 import 'extensions.dart';
@@ -21,9 +21,10 @@ abstract class ReadOptions extends AnyStructure {
     bool verifyChecksums = _verifyChecksumDefault,
     bool fillCache = _fillCacheDefault,
     Snapshot snapshot,
+    @visibleForTesting LibLevelDB lib,
   }) =>
       _ReadOptions(
-        Lib.levelDB,
+        lib ?? Lib.levelDB,
         verifyChecksums: verifyChecksums,
         fillCache: fillCache,
         snapshot: snapshot,

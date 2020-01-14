@@ -95,6 +95,10 @@ abstract class LibLevelDB {
   Leveldb_writebatch_delete get leveldbWritebatchDelete;
   Leveldb_writebatch_iterate get leveldbWritebatchIterate;
   Leveldb_writebatch_append get leveldbWritebatchAppend;
+
+  bool operator ==(other);
+
+  int get hashCode;
 }
 
 class _LibLevelDB implements LibLevelDB {
@@ -440,4 +444,14 @@ class _LibLevelDB implements LibLevelDB {
             .lookup<NativeFunction<leveldb_writebatch_append>>(
                 'leveldb_writebatch_append')
             .asFunction();
+
+  bool operator ==(other) {
+    if (other is _LibLevelDB) {
+      return this.lib == other.lib;
+    }
+
+    return false;
+  }
+
+  int get hashCode => lib.hashCode ^ runtimeType.hashCode;
 }

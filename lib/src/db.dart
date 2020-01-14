@@ -1,3 +1,4 @@
+// ignore_for_file: invalid_use_of_protected_member
 import 'dart:ffi';
 import 'package:ffi/ffi.dart' hide allocate;
 import 'package:leveldb/interop/interop.dart';
@@ -21,6 +22,7 @@ abstract class LevelDB {
   factory LevelDB.open({
     @required Options options,
     @required String filePath,
+    @visibleForTesting LibLevelDB lib,
   }) {
     assert(
       options != null,
@@ -35,7 +37,7 @@ abstract class LevelDB {
       'LevelDB.open: "filePath" parameter is required',
     );
     return _LevelDB.open(
-      Lib.levelDB,
+      lib ?? Lib.levelDB,
       options: options,
       name: filePath,
     );
@@ -44,6 +46,7 @@ abstract class LevelDB {
   factory LevelDB.pointer({
     @required Pointer<leveldb_t> pointer,
     @required Options options,
+    LibLevelDB lib,
   }) {
     assert(
       options != null,
@@ -58,7 +61,7 @@ abstract class LevelDB {
       'LevelDB.open: "pointer" parameter is required',
     );
     return _LevelDB.ptr(
-      Lib.levelDB,
+      lib ?? Lib.levelDB,
       options: options,
       ptr: pointer,
     );
@@ -208,20 +211,24 @@ abstract class _Properties {
 }
 
 extension _SLevelDB on _LevelDB {
-  static void repair(String filePath, Options options) {
+  static void repair(
+    String filePath,
+    Options options, [
+    @visibleForTesting LibLevelDB lib,
+  ]) {
     return errorHandler((errPtr) {
       return allocctx((strPtr) {
-        // ignore: invalid_use_of_protected_member
-        return Lib.levelDB.leveldbRepairDb(options.ptr, strPtr, errPtr);
+        return (lib ?? Lib.levelDB)
+            .leveldbRepairDb(options.ptr, strPtr, errPtr);
       }, () => Utf8.toUtf8(filePath));
     });
   }
 
-  static void destroy(String filePath, Options options) {
+  static void destroy(String filePath, Options options, [LibLevelDB lib]) {
     return errorHandler((errPtr) {
       return allocctx((strPtr) {
-        // ignore: invalid_use_of_protected_member
-        return Lib.levelDB.leveldbDestroyDb(options.ptr, strPtr, errPtr);
+        return (lib ?? Lib.levelDB)
+            .leveldbDestroyDb(options.ptr, strPtr, errPtr);
       }, () => Utf8.toUtf8(filePath));
     });
   }
@@ -230,6 +237,8 @@ extension _SLevelDB on _LevelDB {
 class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   final LibLevelDB lib;
   final Options options;
+  final WriteOptions noSyncWriteOptions;
+  final WriteOptions syncWriteOptions;
 
   @override
   Pointer<leveldb_t> ptr;
@@ -238,13 +247,16 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     this.lib, {
     @required this.options,
     @required String name,
-  }) : ptr = _open(options, name, lib);
+  })  : ptr = _open(options, name, lib),
+        noSyncWriteOptions = WriteOptions.noSync(lib),
+        syncWriteOptions = WriteOptions.sync(lib);
 
   _LevelDB.ptr(
     this.lib, {
     @required this.ptr,
     @required this.options,
-  });
+  })  : noSyncWriteOptions = WriteOptions.noSync(lib),
+        syncWriteOptions = WriteOptions.sync(lib);
 
   static Pointer<leveldb_t> _open(
     Options options,
@@ -253,7 +265,6 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   ) {
     return allocctx((Pointer<Utf8> strptr) {
       return errorHandler(
-        // ignore: invalid_use_of_protected_member
         (errptr) => lib.leveldbOpen(options.ptr, strptr, errptr),
       );
     }, () => Utf8.toUtf8(name));
@@ -268,6 +279,8 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     lib.leveldbClose(ptr);
     ptr = nullptr;
     options?.dispose();
+    noSyncWriteOptions?.dispose();
+    syncWriteOptions?.dispose();
   }
 
   @override
@@ -277,7 +290,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
 
     return errorHandler((errPtr) => lib.leveldbDelete(
           ptr,
-          ensured ? WriteOptions.sync.ptr : WriteOptions.noSync.ptr,
+          ensured ? syncWriteOptions.ptr : noSyncWriteOptions.ptr,
           key.ptr,
           key.length,
           errPtr,
@@ -293,7 +306,6 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
   }) {
     assert(key != null && !key.isDisposed, 'Key is empty');
     attemptTo('get');
-    // ignore: invalid_use_of_protected_member
     final readOptionsAreDefault = ReadOptions.isEqualToDefault(
       verifyChecksums: verifyChecksums,
       fillCache: fillCache,
@@ -345,7 +357,6 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     Position<RawData> initialPosition = const Position.first(),
   }) {
     attemptTo('iterator');
-    // ignore: invalid_use_of_protected_member
     final readOptionsAreDefault = ReadOptions.isEqualToDefault(
       verifyChecksums: verifyChecksums,
       fillCache: fillCache,
@@ -380,7 +391,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     return errorHandler((errPtr) {
       return lib.leveldbPut(
         ptr,
-        ensured ? WriteOptions.sync.ptr : WriteOptions.noSync.ptr,
+        ensured ? syncWriteOptions.ptr : noSyncWriteOptions.ptr,
         key.ptr,
         key.length,
         value.ptr,
@@ -399,7 +410,7 @@ class _LevelDB extends DisposablePointer<leveldb_t> implements LevelDB {
     return errorHandler((errPtr) {
       return lib.leveldbWrite(
         ptr,
-        ensured ? WriteOptions.sync.ptr : WriteOptions.noSync.ptr,
+        ensured ? syncWriteOptions.ptr : noSyncWriteOptions.ptr,
         updates.ptr,
         errPtr,
       );

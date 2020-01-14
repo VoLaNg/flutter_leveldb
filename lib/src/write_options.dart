@@ -1,14 +1,19 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
+import 'package:meta/meta.dart';
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
 
 abstract class WriteOptions extends AnyStructure {
   bool get isSync;
-  static final WriteOptions sync = _WriteOptions(Lib.levelDB, true);
-  static final WriteOptions noSync = _WriteOptions(Lib.levelDB, false);
+
+  factory WriteOptions.sync([@visibleForTesting LibLevelDB lib]) =>
+      _WriteOptions(lib ?? Lib.levelDB, true);
+
+  factory WriteOptions.noSync([@visibleForTesting LibLevelDB lib]) =>
+      _WriteOptions(lib ?? Lib.levelDB, false);
 }
 
 class _WriteOptions implements WriteOptions {

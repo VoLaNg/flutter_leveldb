@@ -2,6 +2,7 @@
 
 import 'dart:ffi';
 import 'package:leveldb/interop/interop.dart';
+import 'package:meta/meta.dart';
 
 import 'cache.dart';
 import 'comparator.dart';
@@ -34,9 +35,10 @@ abstract class Options extends AnyStructure {
     int blockRestartInterval = 16,
     int maxFileSize = 2 * 1024 * 1024,
     CompressionType compressionType = CompressionType.snappy,
+    @visibleForTesting LibLevelDB lib,
   }) =>
       _Options(
-        Lib.levelDB,
+        lib ?? Lib.levelDB,
         comparator: comparator,
         filterPolicy: filterPolicy,
         createIfMissing: createIfMissing,

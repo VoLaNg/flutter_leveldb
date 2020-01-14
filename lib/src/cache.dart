@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:leveldb/interop/interop.dart';
+import 'package:meta/meta.dart';
 import 'extensions.dart';
 import 'library.dart';
 import 'native_wrapper.dart';
@@ -8,7 +9,8 @@ import 'native_wrapper.dart';
 abstract class Cache extends AnyStructure {
   /// Create a new cache with a fixed size capacity.  This implementation
   /// of Cache uses a least-recently-used eviction policy.
-  factory Cache.lru(int capacity) => _Cache(Lib.levelDB, capacity);
+  factory Cache.lru(int capacity, [@visibleForTesting LibLevelDB lib]) =>
+      _Cache(lib ?? Lib.levelDB, capacity);
 }
 
 class _Cache implements Cache {

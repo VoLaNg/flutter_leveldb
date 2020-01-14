@@ -23,13 +23,14 @@ abstract class FilterPolicy extends AnyStructure {
     @required Pointer<NativeFunction<filterpolicy_create_filter>> createFilter,
     @required Pointer<NativeFunction<filterpolicy_key_may_match>> keyMayMatch,
     @required Pointer<NativeFunction<filterpolicy_name>> name,
+    @visibleForTesting LibLevelDB lib,
   }) {
     assert(destructor != null);
     assert(createFilter != null);
     assert(keyMayMatch != null);
     assert(name != null);
     return _FilterPolicy(
-      Lib.levelDB,
+      lib ?? Lib.levelDB,
       destructor: destructor,
       createFilter: createFilter,
       keyMayMatch: keyMayMatch,
@@ -51,8 +52,11 @@ abstract class FilterPolicy extends AnyStructure {
   /// ignores trailing spaces, it would be incorrect to use a
   /// FilterPolicy (like NewBloomFilterPolicy) that does not ignore
   /// trailing spaces in keys.
-  factory FilterPolicy.bloom(int bitsPerKey) =>
-      _FilterPolicy.bloom(Lib.levelDB, bitsPerKey);
+  factory FilterPolicy.bloom(
+    int bitsPerKey, [
+    @visibleForTesting LibLevelDB lib,
+  ]) =>
+      _FilterPolicy.bloom(lib ?? Lib.levelDB, bitsPerKey);
 }
 
 class _FilterPolicy implements FilterPolicy {
