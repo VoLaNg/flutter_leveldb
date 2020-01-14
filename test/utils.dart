@@ -2,15 +2,15 @@ import 'dart:typed_data';
 
 import 'dart:math' as math show Random;
 import 'package:leveldb/leveldb.dart';
-import 'package:flutter_driver/flutter_driver.dart';
+// import 'package:flutter_driver/flutter_driver.dart';
 
-extension PathProvider on FlutterDriver {
-  static const tempDirCommand = 'path_provider.getTemporaryDirectory()';
+// extension PathProvider on FlutterDriver {
+//   static const tempDirCommand = 'path_provider.getTemporaryDirectory()';
 
-  Future<String> getTempDir() {
-    return requestData(tempDirCommand);
-  }
-}
+//   Future<String> getTempDir() {
+//     return requestData(tempDirCommand);
+//   }
+// }
 
 extension ConvenienceLevelDB on LevelDB {
   void putAllAndDispose(

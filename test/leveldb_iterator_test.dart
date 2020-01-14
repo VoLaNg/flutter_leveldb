@@ -1,20 +1,23 @@
-import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart' as t;
 import 'package:leveldb/leveldb.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import 'utils.dart';
 
 void main() {
   t.group('Iterator', () {
-    FlutterDriver driver;
     LevelDB db;
     Options options = Options.byDefault(createIfMissing: true);
     String filePath;
     Map<String, String> entries;
 
+    // create database
     t.setUpAll(() async {
-      driver = await FlutterDriver.connect();
-      filePath = await driver.getTempDir();
-      print('filePath is: $filePath');
+      filePath = path.joinAll([
+        (await getTemporaryDirectory()).path,
+        'leveldb',
+        'iterator.leveldb',
+      ]);
       db = LevelDB.open(
         options: options.copyWith(),
         filePath: filePath,
@@ -22,20 +25,22 @@ void main() {
       entries = RandomMap.random(16, 32);
     });
 
+    // put some data
     t.setUp(() {
       print(entries);
       db.putAllStrings(entries);
     });
 
+    // clear database
     t.tearDown(() {
       db.deleteAllStringKeys(entries.keys.toList());
     });
 
+    // close and delete database
     t.tearDownAll(() async {
       db.close();
       LevelDB.destroy(filePath, options);
       options.dispose();
-      await driver?.close();
     });
 
     t.test('iterate and print all objects', () async {
